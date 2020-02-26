@@ -1,0 +1,77 @@
+version: "3.7"
+
+services:
+  openldap:
+    image: osixia/openldap
+    container_name: openldap
+    command: "--loglevel debug"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./data/certs:/container/service/slapd/assets/certs
+      - ./data/etc:/etc/ldap/slapd.d
+      - ./data/var:/var/lib/ldap
+      - ./data/run:/container/run
+    environment:
+      - LDAP_ORGANISATION=JavaChen
+      - LDAP_DOMAIN=javachen.com
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+      - LDAP_BACKEND=hdb
+      - LDAP_TLS=false
+      - LDAP_TLS_CA_CRT_FILENAME=ca.crt
+      - LDAP_TLS_CRT_FILENAME=ldap.crt
+      - LDAP_TLS_KEY_FILENAME=ldap.key
+    restart: always
+
+  phpldapadmin:
+    image: osixia/phpldapadmin
+    container_name: phpldapadmin
+    command: "--loglevel debug"
+    ports:
+      - "8080:80"
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS="#PYTHON2BASH:[{'openldap': [{'server': [{'tls': False,'port':30389}] }] }]"
+      - PHPLDAPADMIN_HTTPS=false
+    depends_on:
+      - openldap
+    restart: always
+
+  ldap-ssp:
+    image: tiredofit/self-service-password:latest
+    container_name: ldap-ssp
+    ports:
+      - "8081:80"
+    volumes:
+      - ./data/:/www/ssp
+      - ./logs/:/www/logs
+    environment:
+      - LDAP_SERVER=ldap://openldap
+      - LDAP_STARTTLS=false
+      - LDAP_BINDDN=cn=admin,dc=javachen,dc=com
+      - LDAP_BINDPASS=admin
+      - LDAP_BASE_SEARCH=ou=People,dc=javachen,dc=com
+      - LDAP_LOGIN_ATTRIBUTE=cn
+      - LDAP_FULLNAME_ATTRIBUTE=cn
+      - PASSWORD_HASH=SSHA
+      - PASSWORD_MIN_LENGTH=0
+      - PASSWORD_MAX_LENGTH=0
+      - PASSWORD_MIN_LOWERCASE=0
+      - PASSWORD_MIN_UPPERCASE=0
+      - PASSWORD_MIN_DIGIT=0
+      - PASSWORD_MIN_SPECIAL=0
+      - QUESTIONS_ENABLED=false
+      - MAIL_FROM=noreply@example.com
+      - MAIL_FROM_NAME=Password Admin
+      - NOTIFY_ON_CHANGE=true
+      - SMTP_HOST=smtp.example.com
+      - SMTP_AUTH_ON=true
+      - SMTP_USER=noreply@example.com
+      - SMTP_PASS=smtppassword
+      - SMTP_PORT=25
+      - IS_BEHIND_PROXY=false
+      - SECRETEKEY=secretkey123
+    restart: always
+    depends_on:
+      - openldap
