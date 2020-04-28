@@ -1,8 +1,13 @@
-redis:
-  image: redis:alpine
-  command: --save 900 1
-  ports:
-    - "127.0.0.1:6379:6379"
-  volumes:
-    - ./data:/data
-  restart: always
+version: '3.7'
+services:
+  redis:
+    image: redis
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    command: redis-server /etc/redis/redis.conf --appendonly yes --requirepass 123456
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data:/data
+      - ./redis.conf:/etc/redis/redis.conf
