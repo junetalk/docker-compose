@@ -1,14 +1,17 @@
-version: '3'
+version: '3.7'
 
 services:
-
   rabbitmq:
-    image: "rabbitmq:3-management"
+    image: "rabbitmq:management"
     hostname: "rabbit"
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_USER: cshop
+      RABBITMQ_DEFAULT_PASS: cshop
     ports:
       - "15672:15672"
       - "5672:5672"
-    labels:
-      NAME: "rabbitmq"
     volumes:
       - ./rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+

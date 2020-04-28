@@ -2,5 +2,5 @@
 
 while read line
 do
-    add_user.sh $line
-done < users.txt
+    ./add_user.sh $line
+done < one.txt
