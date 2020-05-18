@@ -4,24 +4,23 @@
 
 FROM javachen/alpine:3.11
 
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
+ENV LANG en_US.UTF-8
+ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
+ENV PATH ${PATH}:${JAVA_HOME}/bin
 
 # Create a user and group used to launch processes
 # The user ID 1000 is the default for the first "regular" user on Fedora/RHEL,
 # so there is a high chance that this ID will be equal to the current user
 # making it easier to use volumes (no permission issues)
 RUN set -x \
-	&& apk add --no-cache openjdk8 \
+	&& apk add --update openjdk8 openjdk8-jre ttf-dejavu fontconfig \
+	&& fc-cache -f \
 	&& addgroup --gid 1000 java \
 	&& adduser --disabled-password --uid 1000 --ingroup java --home /home/java java \
-	&& chmod 755 /home/java \
-	&& curl -L https://alibaba.github.io/arthas/install.sh | sh \
-    && mv as.sh /usr/bin/as.sh
+	&& chmod 755 /home/java
 
-# Set the working directory to java' user home directory
 WORKDIR /home/java
 
-# Specify the user which should be used to execute all commands below
 USER java
 
-CMD ["java", "-XX:InitialRAMPercentage=10.0", "-XX:MaxRAMPercentage=50.0", "-XshowSettings:vm", "-version"]
+CMD ["java", "-version"]

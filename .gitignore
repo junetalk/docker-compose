@@ -28,7 +28,7 @@ logs/
 *.tmp
 
 # system ignore
-.DS_Store
+*.DS_Store
 MANIFEST.MF
 Thumbs.db
 
